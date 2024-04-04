@@ -1,34 +1,40 @@
 import random
 
 
-def player(prev_play, opponent_history=[]):
-    if prev_play == "":
-        # First move of the game, choose a default or random move
-        return random.choice(["R", "P", "S"])
+def player(prev_play, opponent_history=[], my_history=[]):
+    # Initialize counter moves map
+    counter_moves = {"R": "P", "P": "S", "S": "R"}
+
+    # Handle the first move or when prev_play is empty
+    if not prev_play:
+        guess = "R"  # Choosing "R" as a default first move
     else:
         opponent_history.append(prev_play)
 
-    # Counter moves map
-    counter_moves = {"R": "P", "P": "S", "S": "R"}
+        # Quincy strategy counter: if the opponent follows a fixed pattern
+        if (
+            len(set(opponent_history[-5:])) <= 2
+        ):  # Detecting repetition or simple pattern
+            guess = counter_moves[prev_play]
+        else:
+            # Dynamic strategy for Abbey and Kris based on more complex pattern recognition
+            if len(my_history) > 2:
+                last_two_me = my_history[-2:]
+                if last_two_me[0] == last_two_me[1]:
+                    guess = counter_moves[
+                        counter_moves[last_two_me[0]]
+                    ]  # Counter the counter-move
+                else:
+                    guess = counter_moves[
+                        random.choice(["R", "P", "S"])
+                    ]  # Adding randomness
+            else:
+                guess = random.choice(["R", "P", "S"])
 
-    # Counter moves map
-    counter_moves = {"R": "P", "P": "S", "S": "R"}
+            # Strategy against Mrugesh: Analyzing opponent's most common move
+            if opponent_history:
+                most_common = max(set(opponent_history), key=opponent_history.count)
+                guess = counter_moves[most_common]
 
-    # Strategy for Quincy: Directly counter the pattern
-    if len(opponent_history) <= 5:
-        # Pattern is R, R, P, P, S - directly counter it
-        return ["P", "P", "S", "S", "R"][len(opponent_history) % 5]
-
-    # Strategy for opponents with detectable patterns
-    if len(opponent_history) > 2:
-        # Attempt to predict the next move based on history
-        guess = counter_moves[opponent_history[-1]]
-
-        # Adjust strategy if a pattern is detected
-        last_two = "".join(opponent_history[-2:])
-        if last_two in ["RR", "PP", "SS"]:  # Opponent might be playing a sequence
-            guess = counter_moves[guess]  # Counter the counter-move
-    else:
-        guess = random.choice(["R", "P", "S"])  # Fallback to random choice
-
+    my_history.append(guess)
     return guess
