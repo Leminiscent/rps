@@ -1,35 +1,21 @@
 def player(prev_play, opponent_history=[]):
-    # Incrementally build a strategy that appears predictable but shifts before Mrugesh adapts
-    if not opponent_history:
-        # Initial move
-        return "R"
-    if len(opponent_history) < 3:
-        # Start with a sequence that suggests a leaning towards "Rock"
-        return "P"  # Countering Mrugesh's expected "Rock" response
-    if len(opponent_history) < 6:
-        # Shift to a sequence suggesting a preference for "Paper" next
-        return "S"  # Countering the expected "Paper" response
-    if len(opponent_history) < 9:
-        # Suggest a new preference for "Scissors"
-        return "R"  # Countering the expected "Scissors" response
+    # Avoid repeating the same move more than twice in the last four plays
+    if len(opponent_history) >= 4:
+        last_four = opponent_history[-4:]
+        if last_four.count(last_four[-1]) > 2:
+            return {"R": "P", "P": "S", "S": "R"}[
+                last_four[-1]
+            ]  # Switch to a counter-move
+    else:
+        # For the first move, play "Rock"
+        if not opponent_history:
+            return "R"
+        # If there's a tie, switch the move
+        if prev_play == opponent_history[-1]:
+            return {"R": "P", "P": "S", "S": "R"}[prev_play]
 
-    # After presenting initial patterns, switch to a more complex strategy:
-    last_ten = opponent_history[-10:]
-    # Counter the most frequent in the last 10, assuming Mrugesh will predict our "most frequent" pattern
-    move_counts = {
-        "R": last_ten.count("R"),
-        "P": last_ten.count("P"),
-        "S": last_ten.count("S"),
-    }
-    most_frequent = max(move_counts, key=move_counts.get)
-
-    # Anticipate Mrugesh's counter strategy and counter that
-    if most_frequent == "R":
-        return "P"  # Expecting Mrugesh to counter with "Paper", we play "Scissors"
-    elif most_frequent == "P":
-        return "S"  # Expecting "Scissors", we play "Rock"
-    elif most_frequent == "S":
-        return "R"  # Expecting "Rock", we play "Paper"
-
-    # Default to "Rock" if all else fails
+    # Default strategy: counter the last move
+    counter_moves = {"R": "P", "P": "S", "S": "R"}
+    if prev_play:
+        return counter_moves[prev_play]
     return "R"
