@@ -2,31 +2,33 @@ import random
 
 
 def player(prev_play, opponent_history=[]):
+    # Increment the opponent's history with the previous play.
     opponent_history.append(prev_play)
 
-    # Since Mrugesh counters the most frequent move in the last ten,
-    # we can try to manipulate what he perceives as most frequent.
-    # This block sets up a pattern to feed into Mrugesh's logic.
-    if len(opponent_history) <= 10:
-        # Start with a sequence that doesn't reveal a clear pattern
-        pattern = ["R", "P", "S", "S", "P", "R", "R", "S", "P", "S"]
-        return pattern[len(opponent_history) - 1]
-    else:
-        # After the initial sequence, predict Mrugesh's move based on our own last play
-        last_ten = opponent_history[
-            -11:-1
-        ]  # Exclude the very last play to adjust for the append at the start
-        most_frequent = max(set(last_ten), key=last_ten.count)
+    # Define the ideal response based on Mrugesh's likely action.
+    ideal_response = {"P": "S", "R": "P", "S": "R"}
 
-        # Counter Mrugesh's predicted move
-        ideal_response = {"P": "S", "R": "P", "S": "R"}
-        # However, to avoid being predictable, vary the response slightly
-        if len(opponent_history) % 3 == 0:
-            return ideal_response[most_frequent]
-        elif len(opponent_history) % 3 == 1:
-            return (
-                most_frequent  # Play what Mrugesh expects to counter, adding confusion
-            )
-        else:
-            # Randomize the third option to avoid detectable patterns
-            return random.choice(["R", "P", "S"])
+    # For the initial moves, cycle through the responses to avoid a clear pattern.
+    if len(opponent_history) < 3:
+        return ["P", "S", "R"][len(opponent_history)]
+
+    # Analyze the last few moves to determine Mrugesh's most likely counter.
+    last_few = opponent_history[-10:]
+    if last_few.count("R") > last_few.count("P") and last_few.count(
+        "R"
+    ) > last_few.count("S"):
+        most_likely = "R"
+    elif last_few.count("P") > last_few.count("S"):
+        most_likely = "P"
+    else:
+        most_likely = "S"
+
+    # Counter Mrugesh's anticipated next move based on our most frequent recent move.
+    response = ideal_response[most_likely]
+
+    # Introduce a slight unpredictability in our play.
+    if len(opponent_history) % 5 == 0:
+        # Occasionally throw in a move that doesn't follow the pattern to confuse Mrugesh.
+        return random.choice(["R", "P", "S"])
+    else:
+        return response
