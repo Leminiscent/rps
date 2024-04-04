@@ -1,25 +1,32 @@
-def player(prev_play, opponent_history=[]):
-    # Quincy's pattern: "R", "R", "P", "P", "S"
-    # Ideal responses: "P", "P", "S", "S", "R"
+import random
 
-    # Append the opponent's last play to the history
+
+def player(prev_play, opponent_history=[]):
     opponent_history.append(prev_play)
 
-    # The length of the pattern before it repeats
-    pattern_length = 5
-    # Map Quincy's plays to our counter plays
-    counter_moves = {"R": "P", "P": "S", "S": "R"}
-
-    # Determine our move based on Quincy's pattern
-    if len(opponent_history) > 0:
-        # Find Quincy's last play's position in the pattern
-        last_move_index = (len(opponent_history) - 1) % pattern_length
-        # Predict Quincy's next move in the sequence
-        predicted_next_move = ["R", "R", "P", "P", "S"][last_move_index]
-        # Select the ideal response to Quincy's predicted next move
-        guess = counter_moves[predicted_next_move]
+    # Since Mrugesh counters the most frequent move in the last ten,
+    # we can try to manipulate what he perceives as most frequent.
+    # This block sets up a pattern to feed into Mrugesh's logic.
+    if len(opponent_history) <= 10:
+        # Start with a sequence that doesn't reveal a clear pattern
+        pattern = ["R", "P", "S", "S", "P", "R", "R", "S", "P", "S"]
+        return pattern[len(opponent_history) - 1]
     else:
-        # Default guess for the first move
-        guess = "P"
+        # After the initial sequence, predict Mrugesh's move based on our own last play
+        last_ten = opponent_history[
+            -11:-1
+        ]  # Exclude the very last play to adjust for the append at the start
+        most_frequent = max(set(last_ten), key=last_ten.count)
 
-    return guess
+        # Counter Mrugesh's predicted move
+        ideal_response = {"P": "S", "R": "P", "S": "R"}
+        # However, to avoid being predictable, vary the response slightly
+        if len(opponent_history) % 3 == 0:
+            return ideal_response[most_frequent]
+        elif len(opponent_history) % 3 == 1:
+            return (
+                most_frequent  # Play what Mrugesh expects to counter, adding confusion
+            )
+        else:
+            # Randomize the third option to avoid detectable patterns
+            return random.choice(["R", "P", "S"])
