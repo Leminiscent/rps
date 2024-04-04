@@ -1,40 +1,25 @@
-import random
+def player(prev_play, opponent_history=[]):
+    # Quincy's pattern: "R", "R", "P", "P", "S"
+    # Ideal responses: "P", "P", "S", "S", "R"
 
+    # Append the opponent's last play to the history
+    opponent_history.append(prev_play)
 
-def player(prev_play, opponent_history=[], my_history=[]):
-    # Initialize counter moves map
+    # The length of the pattern before it repeats
+    pattern_length = 5
+    # Map Quincy's plays to our counter plays
     counter_moves = {"R": "P", "P": "S", "S": "R"}
 
-    # Handle the first move or when prev_play is empty
-    if not prev_play:
-        guess = "R"  # Choosing "R" as a default first move
+    # Determine our move based on Quincy's pattern
+    if len(opponent_history) > 0:
+        # Find Quincy's last play's position in the pattern
+        last_move_index = (len(opponent_history) - 1) % pattern_length
+        # Predict Quincy's next move in the sequence
+        predicted_next_move = ["R", "R", "P", "P", "S"][last_move_index]
+        # Select the ideal response to Quincy's predicted next move
+        guess = counter_moves[predicted_next_move]
     else:
-        opponent_history.append(prev_play)
+        # Default guess for the first move
+        guess = "P"
 
-        # Quincy strategy counter: if the opponent follows a fixed pattern
-        # Strategy for Quincy: Directly counter the pattern
-        if len(opponent_history) <= 5:
-            # Pattern is R, R, P, P, S - directly counter it
-            return ["P", "P", "S", "S", "R"][len(opponent_history) % 5]
-        else:
-            # Dynamic strategy for Abbey and Kris based on more complex pattern recognition
-            if len(my_history) > 2:
-                last_two_me = my_history[-2:]
-                if last_two_me[0] == last_two_me[1]:
-                    guess = counter_moves[
-                        counter_moves[last_two_me[0]]
-                    ]  # Counter the counter-move
-                else:
-                    guess = counter_moves[
-                        random.choice(["R", "P", "S"])
-                    ]  # Adding randomness
-            else:
-                guess = random.choice(["R", "P", "S"])
-
-            # Strategy against Mrugesh: Analyzing opponent's most common move
-            if opponent_history:
-                most_common = max(set(opponent_history), key=opponent_history.count)
-                guess = counter_moves[most_common]
-
-    my_history.append(guess)
     return guess
