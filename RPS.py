@@ -1,32 +1,33 @@
 import random
 
 
-def player(prev_play, opponent_history=[]):
+def player(prev_play, opponent_history=[], my_history=[]):
     opponent_history.append(prev_play)
+    # Adjust the strategy based on the full history rather than just the last ten plays
+    if len(opponent_history) > 10:
+        # Calculate the frequency of each move in the opponent's last 10 plays
+        last_ten = opponent_history[-10:]
+        move_frequencies = {
+            "R": last_ten.count("R"),
+            "P": last_ten.count("P"),
+            "S": last_ten.count("S"),
+        }
 
-    # Since Mrugesh counters the most frequent move in the last ten,
-    # we can try to manipulate what he perceives as most frequent.
-    # This block sets up a pattern to feed into Mrugesh's logic.
-    if len(opponent_history) <= 10:
-        # Start with a sequence that doesn't reveal a clear pattern
-        pattern = ["R", "P", "S", "S", "P", "R", "R", "S", "P", "S"]
-        return pattern[len(opponent_history) - 1]
-    else:
-        # After the initial sequence, predict Mrugesh's move based on our own last play
-        last_ten = opponent_history[
-            -11:-1
-        ]  # Exclude the very last play to adjust for the append at the start
-        most_frequent = max(set(last_ten), key=last_ten.count)
-
-        # Counter Mrugesh's predicted move
+        # Predict Mrugesh's next move based on the most frequent move we played
+        most_frequent_move = max(move_frequencies, key=move_frequencies.get)
         ideal_response = {"P": "S", "R": "P", "S": "R"}
-        # However, to avoid being predictable, vary the response slightly
-        if len(opponent_history) % 3 == 0:
-            return ideal_response[most_frequent]
-        elif len(opponent_history) % 3 == 1:
-            return (
-                most_frequent  # Play what Mrugesh expects to counter, adding confusion
-            )
+        prediction = ideal_response[most_frequent_move]
+
+        # Introduce variability in our play to confuse Mrugesh
+        if random.random() < 0.5:
+            # 50% of the time, counter the predicted move
+            next_play = prediction
         else:
-            # Randomize the third option to avoid detectable patterns
-            return random.choice(["R", "P", "S"])
+            # The other 50%, play the same as Mrugesh's predicted move to disrupt the pattern
+            next_play = most_frequent_move
+    else:
+        # Early in the game, play randomly to avoid establishing a clear pattern
+        next_play = random.choice(["R", "P", "S"])
+
+    my_history.append(next_play)  # Keep track of our own plays (optional, for analysis)
+    return next_play
