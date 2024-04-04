@@ -2,7 +2,11 @@ import random
 
 
 def player(prev_play, opponent_history=[]):
-    opponent_history.append(prev_play)
+    if prev_play == "":
+        # First move of the game, choose a default or random move
+        return random.choice(["R", "P", "S"])
+    else:
+        opponent_history.append(prev_play)
 
     # Counter moves map
     counter_moves = {"R": "P", "P": "S", "S": "R"}
